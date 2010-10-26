@@ -15,4 +15,6 @@ Rcov::RcovTask.new(:rcov) do |t|
   t.verbose = true
 end
 
-YARD::Rake::YardocTask.new(:yard)
+YARD::Rake::YardocTask.new(:yard) do |t|
+  t.files = ["lib/**/*.rb", "-", "CHANGELOG.md"]
+end
