@@ -53,7 +53,7 @@ module Peekaboo
       self::PEEKABOO_METHOD_LIST
     end
     
-    def peeks_at *method_names
+    def enable_tracing_on *method_names
       method_names.each do |method_name|
         unless peek_list.include? method_name
           peek_list << method_name

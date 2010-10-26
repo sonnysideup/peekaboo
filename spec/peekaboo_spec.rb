@@ -16,26 +16,26 @@ describe Peekaboo do
     end
   end
   
-  context ".peeks_at" do
+  context ".enable_tracing_on" do
     before(:each) do
       @test_class = new_test_class
       @test_class.instance_eval { include Peekaboo }
     end
     
     it "should be a singleton method added to any including class" do
-      @test_class.should respond_to(:peeks_at)
+      @test_class.should respond_to(:enable_tracing_on)
     end
     
     it "should store a list of methods to trace on any including class" do
       methods_to_trace = [:method_no_args, :method_one_arg]
-      @test_class.peeks_at *methods_to_trace
+      @test_class.enable_tracing_on *methods_to_trace
       @test_class::PEEKABOO_METHOD_LIST.should == methods_to_trace
     end
     
     it "should raise an exception when trying to add a method that is already being traced" do
-      @test_class.peeks_at :some_method
+      @test_class.enable_tracing_on :some_method
       lambda {
-        @test_class.peeks_at :some_method
+        @test_class.enable_tracing_on :some_method
       }.should raise_exception("Already tracing `some_method'")
     end
   end
@@ -45,7 +45,7 @@ describe Peekaboo do
       @test_class = new_test_class
       @test_class.instance_eval do
         include Peekaboo
-        peeks_at :method_no_args, :method_one_arg, :method_two_args, :method_optional_args, :method_variable_args, :method_raises
+        enable_tracing_on :method_no_args, :method_one_arg, :method_two_args, :method_optional_args, :method_variable_args, :method_raises
       end
       
       @test_instance = @test_class.new
