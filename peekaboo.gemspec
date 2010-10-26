@@ -15,4 +15,12 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency "rspec", "1.3.0"
   gem.add_development_dependency "rcov",  "0.9.9"
   gem.add_development_dependency "yard",  "0.6.1"
+  
+  gem.files = [
+    "README.md",
+    "CHANGELOG.md",
+    "lib/peekaboo.rb",
+    "lib/peekaboo/configuration.rb",
+    "lib/peekaboo/version.rb"
+  ]
 end
