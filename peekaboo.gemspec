@@ -16,11 +16,6 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency "rcov",  "0.9.9"
   gem.add_development_dependency "yard",  "0.6.1"
   
-  gem.files = [
-    "README.md",
-    "CHANGELOG.md",
-    "lib/peekaboo.rb",
-    "lib/peekaboo/configuration.rb",
-    "lib/peekaboo/version.rb"
-  ]
+  gem.files      = `git ls-files`.split("\n")
+  gem.test_files = `git ls-files -- spec/*`.split("\n")
 end
