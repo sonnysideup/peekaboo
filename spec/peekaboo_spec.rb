@@ -103,4 +103,8 @@ describe Peekaboo do
     end
   end
   
+  context "autoinclusion tracing" do
+    
+  end
+  
 end

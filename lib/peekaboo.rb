@@ -13,6 +13,7 @@ module Peekaboo
     
     def included klass
       klass.const_set :PEEKABOO_METHOD_LIST, []
+      klass.instance_variable_set :@_hooked_by_peekaboo, true
       klass.extend SingletonMethods
       
       def klass.method_added name
@@ -54,15 +55,16 @@ module Peekaboo
     end
     
     def enable_tracing_on *method_names
+      include Peekaboo unless @_hooked_by_peekaboo
+      
       method_names.each do |method_name|
         unless peek_list.include? method_name
           peek_list << method_name
-          Peekaboo.wrap_method(self, method_name) if self.instance_methods(false).include? method_name.to_s
+          Peekaboo.wrap_method self, method_name if self.instance_methods(false).include? method_name.to_s
         else
           raise "Already tracing `#{method_name}'"
         end
       end
     end
   end
-  
 end
