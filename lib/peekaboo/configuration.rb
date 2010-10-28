@@ -2,6 +2,8 @@ require 'logger'
 require 'set'
 
 module Peekaboo
+  # Rome wasn't built in a day...
+  # Documentation soon to come.
   class Configuration
     
     TRACE_LEVELS = [ :debug, :info, :warn, :error, :fatal, :unknown ]
