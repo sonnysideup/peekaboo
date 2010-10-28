@@ -1,10 +1,12 @@
 $:.unshift File.expand_path('../../lib', __FILE__)
 
 require 'rubygems'
-require 'peekaboo'
 require 'ruby-debug'
+require 'tempfile'
 require 'spec'
 require 'spec/autorun'
+
+require 'peekaboo'
 
 Spec::Runner.configure do |config|
   def new_test_class
@@ -38,13 +40,5 @@ Spec::Runner.configure do |config|
     file, line = file_and_line.split(':')
     line = line.to_i + offset
     "#{file}:#{line}\n\t( #{contents} )"
-  end
-
-  def remove_injections_on *klasses
-    klasses.each do |klass|
-      class << klass
-        remove_method :enable_tracing_on
-      end
-    end
   end
 end
