@@ -11,6 +11,7 @@ end
 
 Rcov::RcovTask.new(:rcov) do |t|
   t.test_files = FileList['spec/**/*_spec.rb']
+  t.rcov_opts  = ['--exclude', '/gems/,spec'] # /gems/,/Library/,spec,.bundle,config
   t.verbose = true
 end
 
