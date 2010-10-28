@@ -21,6 +21,17 @@ module Peekaboo
       end
     end
     
+    def setup_autoinclusion klass
+      def klass.method_missing(method_name, *args, &block)
+        if method_name.to_s =~ /^enable_tracing_on$/
+          instance_eval { include Peekaboo }
+          enable_tracing_on *args
+        else
+          super
+        end
+      end
+    end
+    
     # @note Should I add execution time to logs?
     def wrap_method klass, name
       return if @_adding_a_method
@@ -67,4 +78,5 @@ module Peekaboo
       end
     end
   end
+  
 end
