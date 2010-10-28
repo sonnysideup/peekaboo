@@ -25,11 +25,11 @@ When creating a new class, include Peekaboo and then call `enable_tracing_on`, p
       enable_tracing_on :foo, :bar
       
       def foo
-        ...
+        #...
       end
       
       def bar
-        ...
+        #...
       end
     end
 
@@ -51,6 +51,15 @@ Now, with tracing enabled, Peekaboo will report when/where those methods are cal
     
     @obj.baz :one, 2, "three"
 
+**NOTE:** Once a class has already included `Peekaboo`, you can call `enable_tracing_on` directly on the class.
+
+    class SomeClass
+      include Peekaboo
+      # methods n' such
+    end
+    
+    SomeClass.enable_tracing_on :this, :that, :the_other
+
 ## Configuration
 
 The default tracer for Peekaboo is an instance of `Logger` streaming to `STDOUT`.
@@ -66,6 +75,46 @@ If this doesn't suit your needs, it is a trivial task to set the tracer to anoth
       # any object that responds to debug, info, warn, error, fatal, unknown
       config.trace_with @custom_logger_object
     end
+
+### Auto-inclusion ( Exciting NEW FEATURE )
+
+Want to use tracing in classes without having to open up their definitions?
+Simply provide a list of classes to the configuration.
+
+    Peekaboo.configure do |config|
+      config.autoinclude_with Zip, Zap, Boom
+    end
+    
+    # Then inside your code somewhere
+    Zip.enable_tracing_on # ...
+    Zap.enable_tracing_on # ...
+    Boom.enable_tracing_on # ...
+
+By configuring auto-inclusion, `Peekaboo` will load itself into your class *dynamically* at runtime.
+All that's left for you to do is call `enable_tracing_on` with a list of methods you want to trace.
+
+Easy, huh? *It gets better!*
+
+This feature also works with class hierarchies, meaning that, if you setup auto-inclusion on a given class,
+it will be enabled for any class that inherits from that class.
+
+**This does NOT mean that Peekaboo gets loaded into every subclass, but only that it's available for dynamic inclusion.**
+
+    class Weapon
+    end
+    
+    class Firearm < Weapon
+    end
+    
+    class Pistol < Firearm
+    end
+    
+    Peeakboo.configure do |config|
+      config.autoinclude_with Weapon
+    end
+    
+    Pistol.enable_tracing_one # Peekaboo loaded, Weapon & Firearm still left unchanged
+    Firearm.enable_tracing_on # Peekaboo loaded, Weapon left unchanged
 
 ## Issues
 
