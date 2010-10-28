@@ -17,16 +17,10 @@ module Peekaboo
     def autoinclude_with *klasses
       if klasses.all? { |klass| klass.instance_of? Class }
         @autoincluded.merge klasses
+        
         autoincluded.each do |klass|
           next if klass.included_modules.include? Peekaboo.to_s
-          def klass.method_missing(method_name, *args, &block)
-            if method_name.to_s =~ /^enable_tracing_on$/
-              instance_eval { include Peekaboo }
-              enable_tracing_on *args
-            else
-              super
-            end
-          end
+          Peekaboo.setup_autoinclusion klass
         end
       else
         raise 'Auto-inclusion can only be used with classes'
