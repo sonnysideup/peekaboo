@@ -39,9 +39,9 @@ module Peekaboo
     # @param [Class] klass class to modify
     def setup_autoinclusion klass
       def klass.method_missing(method_name, *args, &block)
-        if method_name.to_s =~ /^enable_tracing_for|enable_tracing_on$/
+        if method_name.to_s =~ /^enable_tracing_on$/
           instance_eval { include Peekaboo }
-          enable_tracing_for *args
+          enable_tracing_on *args
         else
           super
         end
@@ -103,16 +103,13 @@ module Peekaboo
     #   end
     #
     #   # Tracing will be performed on method1(), method2(), but NOT method3()
-    #   SomeClass.enable_tracing_for :method1, :method2
+    #   SomeClass.enable_tracing_on :method1, :method2
     #
     # @param [*Symbol] method_names
     #   the list of methods that you want to trace
     # @raise [RuntimeError]
     #   when attempting to add a method that is already being traced
-    # @note
-    #   This method was previously called *enable_tracing_on*. Calls to that method name
-    #   will be deprecrated in version 0.4.0.
-    def enable_tracing_for *method_names
+    def enable_tracing_on *method_names
       include Peekaboo unless @_hooked_by_peekaboo
       
       method_names.each do |method_name|
@@ -124,6 +121,5 @@ module Peekaboo
         end
       end
     end
-    alias_method :enable_tracing_on, :enable_tracing_for
   end
 end
