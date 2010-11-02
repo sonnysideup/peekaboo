@@ -18,11 +18,11 @@ Its tracer adheres to the API established by the Logger class ( i.e. debug, info
 For now, the only trace level supported is "info", but there are plans to support all trace levels in the future.
 Also, this first cut only provides tracing for _instance_ methods.
 
-When creating a new class, include Peekaboo and then call `enable_tracing_on`, passing it a list of method names to trace.
+When creating a new class, include Peekaboo and then call `enable_tracing_for`, passing it a list of method names to trace.
 
     class Example
       include Peekaboo
-      enable_tracing_on :foo, :bar
+      enable_tracing_for :foo, :bar
       
       def foo
         #...
@@ -40,7 +40,7 @@ In that case, simply reopen the class definition and follow the same steps liste
     
     class Example
       include Peekaboo
-      enable_tracing_on :baz, :bif
+      enable_tracing_for :baz, :bif
     end
 
 Now, with tracing enabled, Peekaboo will report when/where those methods are called along with their input and output values.
@@ -51,14 +51,14 @@ Now, with tracing enabled, Peekaboo will report when/where those methods are cal
     
     @obj.baz :one, 2, "three"
 
-**NOTE:** Once a class has already included `Peekaboo`, you can call `enable_tracing_on` directly on the class.
+**NOTE:** Once a class has already included `Peekaboo`, you can call `enable_tracing_for` directly on the class.
 
     class SomeClass
       include Peekaboo
       # methods n' such
     end
     
-    SomeClass.enable_tracing_on :this, :that, :the_other
+    SomeClass.enable_tracing_for :this, :that, :the_other
 
 ## Configuration
 
@@ -86,12 +86,12 @@ Simply provide a list of classes to the configuration.
     end
     
     # Then inside your code somewhere
-    Zip.enable_tracing_on # ...
-    Zap.enable_tracing_on # ...
-    Boom.enable_tracing_on # ...
+    Zip.enable_tracing_for # ...
+    Zap.enable_tracing_for # ...
+    Boom.enable_tracing_for # ...
 
 By configuring auto-inclusion, `Peekaboo` will load itself into your class *dynamically* at runtime.
-All that's left for you to do is call `enable_tracing_on` with a list of methods you want to trace.
+All that's left for you to do is call `enable_tracing_for` with a list of methods you want to trace.
 
 Easy, huh? *It gets better!*
 
@@ -113,8 +113,8 @@ it will be enabled for any class that inherits from that class.
       config.autoinclude_with Weapon
     end
     
-    Pistol.enable_tracing_one # Peekaboo loaded, Weapon & Firearm still left unchanged
-    Firearm.enable_tracing_on # Peekaboo loaded, Weapon left unchanged
+    Pistol.enable_tracing_for # Peekaboo loaded, Weapon & Firearm still left unchanged
+    Firearm.enable_tracing_for # Peekaboo loaded, Weapon left unchanged
 
 ## Issues
 

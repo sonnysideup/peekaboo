@@ -16,26 +16,26 @@ describe Peekaboo do
     end
   end
   
-  context ".enable_tracing_on" do
+  context ".enable_tracing_for" do
     before(:each) do
       @test_class = new_test_class
       @test_class.instance_eval { include Peekaboo }
     end
     
     it "should be a singleton method added to any including class" do
-      @test_class.should respond_to :enable_tracing_on
+      @test_class.should respond_to :enable_tracing_for
     end
     
     it "should store a list of methods to trace on any including class" do
       methods_to_trace = [:method_no_args, :method_one_arg]
-      @test_class.enable_tracing_on *methods_to_trace
+      @test_class.enable_tracing_for *methods_to_trace
       @test_class::PEEKABOO_METHOD_LIST.should == methods_to_trace
     end
     
     it "should raise an exception when trying to add a method that is already being traced" do
-      @test_class.enable_tracing_on :some_method
+      @test_class.enable_tracing_for :some_method
       lambda {
-        @test_class.enable_tracing_on :some_method
+        @test_class.enable_tracing_for :some_method
       }.should raise_exception "Already tracing `some_method'"
     end
   end
@@ -45,7 +45,7 @@ describe Peekaboo do
       @test_class = new_test_class
       @test_class.instance_eval do
         include Peekaboo
-        enable_tracing_on :method_no_args, :method_one_arg, :method_two_args, :method_optional_args, :method_variable_args, :method_raises
+        enable_tracing_for :method_no_args, :method_one_arg, :method_two_args, :method_optional_args, :method_variable_args, :method_raises
       end
       
       @test_instance = @test_class.new
@@ -111,7 +111,7 @@ describe Peekaboo do
     it "should inject functionality into an auto-included class" do
       test_class = new_test_class
       Peekaboo.configure { |config| config.autoinclude_with test_class }
-      test_class.enable_tracing_on :method_no_args
+      test_class.enable_tracing_for :method_no_args
       
       @tracer.should_receive(:info).with trace_message "Invoking: #{test_class}#method_no_args with [] ==> Returning: nil"
       test_class.new.method_no_args
@@ -124,7 +124,7 @@ describe Peekaboo do
       end
       
       Peekaboo.configure { |config| config.autoinclude_with parent_class }
-      child_class.enable_tracing_on :another_method
+      child_class.enable_tracing_for :another_method
 
       @tracer.should_receive(:info).with trace_message "Invoking: #{child_class}#another_method with [] ==> Returning: nil"
       child_class.new.another_method
@@ -136,7 +136,7 @@ describe Peekaboo do
       
       Peekaboo.configure { |config| config.autoinclude_with test_class }
       
-      lambda { another_test_class.enable_tracing_on :method_no_args }.should raise_exception NoMethodError
+      lambda { another_test_class.enable_tracing_for :method_no_args }.should raise_exception NoMethodError
     end
     
     it "should maintain unique tracing method lists across an inheritance chain" do
@@ -147,8 +147,8 @@ describe Peekaboo do
       
       Peekaboo.configure { |config| config.autoinclude_with parent_class }
       
-      parent_class.enable_tracing_on :method_no_args
-      child_class.enable_tracing_on :another_method
+      parent_class.enable_tracing_for :method_no_args
+      child_class.enable_tracing_for :another_method
       
       parent_class.peek_list.should =~ [:method_no_args]
       child_class.peek_list.should  =~ [:another_method]
