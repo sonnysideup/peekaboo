@@ -1,3 +1,9 @@
+## 0.2.1 (November 4, 2010)
+
+Bugfix:
+
+  - Fixed `.enable_tracing_on` to work with both Ruby version 1.8.7 and 1.9.2
+
 ## 0.2.0 (October 28, 2010)
 
 Features:
