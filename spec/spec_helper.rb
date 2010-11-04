@@ -36,9 +36,24 @@ Spec::Runner.configure do |config|
   end
   
   def trace_message contents, offset = 1
-    file_and_line = caller(1)[0]
-    file, line = file_and_line.split(':')
-    line = line.to_i + offset
-    "#{file}:#{line}\n\t( #{contents} )"
+    file, line, method = CallChain.parse_caller(caller(1).first)
+    line += offset
+    
+    if RUBY_VERSION < '1.9'
+      "#{file}:#{line}\n\t( #{contents} )"
+    else
+      "#{file}:#{line}:in `#{method}'\n\t( #{contents} )"
+    end
+  end
+  
+  class CallChain
+    def self.parse_caller(at)
+      if /^(.+?):(\d+)(?::in `(.*)')?/ =~ at
+        file   = Regexp.last_match[1]
+        line   = Regexp.last_match[2].to_i
+        method = Regexp.last_match[3]
+        [file, line, method]
+      end
+    end
   end
 end

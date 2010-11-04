@@ -97,9 +97,11 @@ describe Peekaboo do
     end
     
     it "should show methods that raise an exception" do
-      @tracer.should_receive(:info).
-        with trace_message %{Invoking: #{@test_class}#method_raises with [] !!! Raising: "something went wrong"}
-      lambda { @test_instance.method_raises }.should raise_exception
+      lambda do
+        @tracer.should_receive(:info).
+          with trace_message %{Invoking: #{@test_class}#method_raises with [] !!! Raising: "something went wrong"}
+        @test_instance.method_raises
+      end.should raise_exception
     end
   end
   

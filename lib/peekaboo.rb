@@ -115,7 +115,8 @@ module Peekaboo
       method_names.each do |method_name|
         unless peek_list.include? method_name
           peek_list << method_name
-          Peekaboo.wrap_method self, method_name if self.instance_methods(false).include? method_name.to_s
+          method_list = self.instance_methods(false).map(&:to_sym)
+          Peekaboo.wrap_method self, method_name if method_list.include? method_name
         else
           raise "Already tracing `#{method_name}'"
         end
