@@ -24,14 +24,19 @@ module Peekaboo
     #
     # @param [Class] klass including class
     def included klass
-      klass.const_set :PEEKABOO_METHOD_LIST, [] # remove when moving to version 0.4.0
+      # NOTE: remove :PEEKABOO_METHOD_LIST when moving to version 0.4.0
+      klass.const_set :PEEKABOO_METHOD_LIST, []
       
-      klass.const_set :PEEKABOO_METHOD_MAP, { :class_methods => Set.new, :instance_methods => Set.new }
+      klass.const_set :PEEKABOO_METHOD_MAP, { :singleton_methods => Set.new, :instance_methods => Set.new }.freeze
       klass.instance_variable_set :@_hooked_by_peekaboo, true
       klass.extend SingletonMethods
       
       def klass.method_added name
-        Peekaboo.wrap_method self, name if peek_list.include? name
+        Peekaboo.wrap self, name, :instance if traced_instance_methods.include?(name) || peek_list.include?(name)
+      end
+      
+      def klass.singleton_method_added name
+        Peekaboo.wrap self, name, :singleton if traced_singleton_methods.include? name
       end
     end
     
@@ -57,6 +62,7 @@ module Peekaboo
     #
     # @param [Class] klass method owner
     # @param [Symbol] name method to trace
+    # @deprecated not being used AT ALL anymore
     def wrap_method klass, name
       return if @_adding_a_method
       @_adding_a_method = true
@@ -89,6 +95,7 @@ module Peekaboo
   module SingletonMethods
     # @return [Array<Symbol>]
     #   a list of instance methods that are being traced inside calling class
+    # @deprecated will be removed in version 0.4.0, use {#traced_method_map} instead
     def peek_list
       self::PEEKABOO_METHOD_LIST
     end
@@ -111,6 +118,7 @@ module Peekaboo
     #   the list of methods that you want to trace
     # @raise [RuntimeError]
     #   when attempting to add a method that is already being traced
+    # @deprecated will be removed in version 0.4.0, use {#enable_tracing_for} instead
     def enable_tracing_on *method_names
       include Peekaboo unless @_hooked_by_peekaboo
       
@@ -118,7 +126,7 @@ module Peekaboo
         unless peek_list.include? method_name
           peek_list << method_name
           method_list = self.instance_methods(false).map(&:to_sym)
-          Peekaboo.wrap_method self, method_name if method_list.include? method_name
+          Peekaboo.wrap self, method_name, :instance if method_list.include? method_name
         else
           raise "Already tracing `#{method_name}'"
         end
@@ -130,26 +138,56 @@ module Peekaboo
   
   module SingletonMethods
     # @todo document
-    def traced_methods
+    def traced_method_map
       self::PEEKABOO_METHOD_MAP
     end
     
-    # @todo document and make sure to validate options
-    def enable_tracing_for options
-      class_methods = options[:class_methods] || []
-      instance_methods = options[:instance_methods] || []
+    # @todo document
+    def traced_singleton_methods
+      traced_method_map[:singleton_methods]
+    end
+    
+    # @todo document
+    def traced_instance_methods
+      traced_method_map[:instance_methods]
+    end
+    
+    # @todo document
+    def enable_tracing_for method_map
+      include Peekaboo unless @_hooked_by_peekaboo
       
-      class_methods.each do |method_name|
-        unless traced_methods[:class_methods].include? method_name
-          traced_methods[:class_methods] << method_name
-          Peekaboo.wrap self, method_name, :class
+      method_map = { :singleton_methods => [], :instance_methods => [] }.merge method_map
+      
+      # _enable_tracing_ method_map[:singleton_methods], :singleton
+      # _enable_tracing_ method_map[:instance_methods], :instance
+      
+      method_map[:instance_methods].each do |method_name|
+        unless traced_instance_methods.include? method_name
+          traced_instance_methods << method_name
+          existing_methods = self.instance_methods(false).map(&:to_sym)
+          Peekaboo.wrap self, method_name, :instance if existing_methods.include? method_name
         end
       end
       
-      instance_methods.each do |method_name|
-        unless traced_methods[:instance_methods].include? method_name
-          traced_methods[:instance_methods] << method_name
-          Peekaboo.wrap self, method_name, :instance
+      method_map[:singleton_methods].each do |method_name|
+        unless traced_singleton_methods.include? method_name
+          traced_singleton_methods << method_name
+          existing_methods = self.singleton_methods(false).map(&:to_sym)
+          Peekaboo.wrap self, method_name, :singleton if existing_methods.include? method_name
+        end
+      end
+    end
+    
+    private
+    
+    # @todo decide whether to keep or not
+    def _enable_tracing_ some_methods, target
+      some_methods.each do |method_name|
+        target_method_list = __send__ :"traced_#{target}_methods"
+        
+        unless target_method_list.include? method_name
+          target_method_list << method_name
+          Peekaboo.wrap self, method_name, target
         end
       end
     end
@@ -163,8 +201,8 @@ module Peekaboo
         @_adding_a_method = true
         original_method = "original_#{method_name}"
         case target
-        when :class then wrap_class_method klass, method_name, original_method
-        when :instance then wrap_instance_method klass, method_name, original_method
+        when :singleton then wrap_singleton_method klass, method_name, original_method
+        when :instance  then wrap_instance_method klass, method_name, original_method
         else raise 'Only :class and :instance are valid targets'
         end
       rescue => exe
@@ -177,7 +215,7 @@ module Peekaboo
     private
     
     # @todo document
-    def wrap_class_method klass, method_name, original_method_name
+    def wrap_singleton_method klass, method_name, original_method_name
       method_wrapping = %{
         class << self
           alias_method :#{original_method_name}, :#{method_name}

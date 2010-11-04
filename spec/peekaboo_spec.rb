@@ -15,19 +15,43 @@ describe Peekaboo do
   end
   
   context "tracing" do
+    before(:each) do
+      @tracer = Peekaboo.configuration.tracer
+      @test_class = new_test_class.instance_eval { include Peekaboo }
+      @test_class.enable_tracing_for :singleton_methods => [:say_hello, :hello, :add, :happy?, :comma_list, :kaboom],
+                                     :instance_methods  => [:say_goodbye, :goodbye, :subtract, :sad?, :pipe_list, :crash]
+    end
     
-    it "should maintain a map of traced methods inside any including class"
+    it "should guard its map of traced methods" do
+      lambda {
+        @test_class.traced_method_map[:something] = 'unwanted'
+      }.should raise_exception
+    end
     
-    it "should ensure the traced method map contains unique entries"
+    it "should store a list of traced methods" do
+      @test_class.traced_singleton_methods.should include :say_hello, :hello, :add, :happy?, :comma_list, :kaboom
+      @test_class.traced_instance_methods.should include :say_goodbye, :goodbye, :subtract, :sad?, :pipe_list, :crash
+    end
+    
+    it "should ensure that traced methods are uniquely stored" do
+      lambda {
+        @test_class.enable_tracing_for :singleton_methods => [:say_hello]
+      }.should_not change(@test_class.traced_singleton_methods, :size).from(6)
+      
+      lambda {
+        @test_class.enable_tracing_for :singleton_methods => [:object_id]
+      }.should change(@test_class.traced_singleton_methods, :size).from(6).to(7)
+      
+      lambda {
+        @test_class.enable_tracing_for :instance_methods => [:say_goodbye]
+      }.should_not change(@test_class.traced_instance_methods, :size).from(6)
+      
+      lambda {
+        @test_class.enable_tracing_for :instance_methods => [:object_id]
+      }.should change(@test_class.traced_instance_methods, :size).from(6).to(7)
+    end
     
     context "on class methods" do
-      before(:all) do
-        @tracer = Peekaboo.configuration.tracer
-        @test_class = new_test_class
-        @test_class.instance_eval { include Peekaboo }
-        @test_class.enable_tracing_for :class_methods => [:say_hello, :hello, :add, :happy?, :comma_list, :kaboom]
-      end
-      
       it "should not take place on unlisted methods" do
         @tracer.should_not_receive :info
         @test_class.object_id
@@ -80,15 +104,21 @@ describe Peekaboo do
           @test_class.kaboom
         end.should raise_exception
       end
+    
+      it "should work when methods are added after the fact" do
+        @test_class.enable_tracing_for :singleton_methods => [:dog]
+        def @test_class.dog
+          'woof'
+        end
+        
+        @tracer.should_receive(:info).
+          with trace_message %{Invoking: #{@test_class}#dog with [] ==> Returning: "woof"}
+        @test_class.dog
+      end
     end
     
     context "on instance methods" do
-      before(:all) do
-        @tracer = Peekaboo.configuration.tracer
-        @test_class = new_test_class
-        @test_class.instance_eval { include Peekaboo }
-        @test_class.enable_tracing_for :instance_methods => [:say_goodbye, :goodbye, :subtract, :sad?, :pipe_list, :crash]
-
+      before(:each) do
         @test_instance = @test_class.new
       end
 
@@ -143,6 +173,19 @@ describe Peekaboo do
             with trace_message %{Invoking: #{@test_class}#crash with [] !!! Raising: "twisted code"}
           @test_instance.crash
         end.should raise_exception
+      end
+
+      it "should work when methods are added after the fact" do
+        @test_class.enable_tracing_for :instance_methods => [:frog]
+        @test_class.class_eval do
+          def frog
+            'ribbit'
+          end
+        end
+        
+        @tracer.should_receive(:info).
+          with trace_message %{Invoking: #{@test_class}#frog with [] ==> Returning: "ribbit"}
+        @test_instance.frog
       end
     end
     
