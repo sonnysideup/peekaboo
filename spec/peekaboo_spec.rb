@@ -1,20 +1,153 @@
 require File.expand_path('../spec_helper', __FILE__)
 
 describe Peekaboo do
-
-  context ".configuration" do
-    it "should hold a reference to the current configuration" do
+  
+  context "configuration" do
+    it "should be properly referenced" do
       Peekaboo.configuration.should be_an_instance_of Peekaboo::Configuration
     end
-  end
-  
-  context ".configure" do
-    it "should yield the current configuration" do
+    
+    it "should yield itself" do
       yielded_object = nil
       Peekaboo.configure { |x| yielded_object = x }
       Peekaboo.configuration.should == yielded_object
     end
   end
+  
+  context "tracing" do
+    
+    it "should maintain a map of traced methods inside any including class"
+    
+    it "should ensure the traced method map contains unique entries"
+    
+    context "on class methods" do
+      before(:all) do
+        @tracer = Peekaboo.configuration.tracer
+        @test_class = new_test_class
+        @test_class.instance_eval { include Peekaboo }
+        @test_class.enable_tracing_for :class_methods => [:say_hello, :hello, :add, :happy?, :comma_list, :kaboom]
+      end
+      
+      it "should not take place on unlisted methods" do
+        @tracer.should_not_receive :info
+        @test_class.object_id
+      end
+      
+      it "should show listed methods with no arguments" do
+        @tracer.should_receive(:info).
+          with trace_message %{Invoking: #{@test_class}#say_hello with [] ==> Returning: "hello"}
+        @test_class.say_hello
+      end
+      
+      it "should show listed methods with required arguments" do
+        @tracer.should_receive(:info).
+          with trace_message %{Invoking: #{@test_class}#hello with ["developer"] ==> Returning: "hello developer"}
+        @test_class.hello 'developer'
+        
+        @tracer.should_receive(:info).
+          with trace_message %{Invoking: #{@test_class}#add with [1, 2] ==> Returning: 3}
+        @test_class.add 1, 2
+      end
+      
+      it "should show methods with optional arguments" do
+        @tracer.should_receive(:info).
+          with trace_message %{Invoking: #{@test_class}#happy? with [] ==> Returning: true}
+        @test_class.happy?
+        
+        @tracer.should_receive(:info).
+          with trace_message %{Invoking: #{@test_class}#happy? with [false] ==> Returning: false}
+        @test_class.happy? false
+      end
+      
+      it "should show methods with variable arguments" do
+        @tracer.should_receive(:info).
+          with trace_message %{Invoking: #{@test_class}#comma_list with [] ==> Returning: ""}
+        @test_class.comma_list
+        
+        @tracer.should_receive(:info).
+          with trace_message %{Invoking: #{@test_class}#comma_list with [:too, "cool"] ==> Returning: "too,cool"}
+        @test_class.comma_list :too, 'cool'
+        
+        @tracer.should_receive(:info).
+          with trace_message %{Invoking: #{@test_class}#comma_list with [1, "to", 5] ==> Returning: "1,to,5"}
+        @test_class.comma_list 1, 'to', 5
+      end
+      
+      it "should show methods that raise an exception" do
+        @tracer.should_receive(:info).
+          with trace_message %{Invoking: #{@test_class}#kaboom with [] !!! Raising: "fire, fire"}
+        lambda { @test_class.kaboom }.should raise_exception
+      end
+    end
+    
+    context "on instance methods" do
+      before(:all) do
+        @tracer = Peekaboo.configuration.tracer
+        @test_class = new_test_class
+        @test_class.instance_eval { include Peekaboo }
+        @test_class.enable_tracing_for :instance_methods => [:say_goodbye, :goodbye, :subtract, :sad?, :pipe_list, :crash]
+
+        @test_instance = @test_class.new
+      end
+
+      it "should not take place on unlisted methods" do
+        @tracer.should_not_receive :info
+        @test_instance.object_id
+      end
+      
+      it "should show listed methods with no arguments" do
+        @tracer.should_receive(:info).
+          with trace_message %{Invoking: #{@test_class}#say_goodbye with [] ==> Returning: "goodbye"}
+        @test_instance.say_goodbye
+      end
+      
+      it "should show listed methods with required arguments" do
+        @tracer.should_receive(:info).
+          with trace_message %{Invoking: #{@test_class}#goodbye with ["bugs"] ==> Returning: "goodbye bugs"}
+        @test_instance.goodbye 'bugs'
+      
+        @tracer.should_receive(:info).
+          with trace_message %{Invoking: #{@test_class}#subtract with [5, 4] ==> Returning: 1}
+        @test_instance.subtract 5, 4
+      end
+      
+      it "should show methods with optional arguments" do
+        @tracer.should_receive(:info).
+          with trace_message %{Invoking: #{@test_class}#sad? with [] ==> Returning: false}
+        @test_instance.sad?
+      
+        @tracer.should_receive(:info).
+          with trace_message %{Invoking: #{@test_class}#sad? with [true] ==> Returning: true}
+        @test_instance.sad? true
+      end
+      
+      it "should show methods with variable arguments" do
+        @tracer.should_receive(:info).
+          with trace_message %{Invoking: #{@test_class}#pipe_list with [] ==> Returning: ""}
+        @test_instance.pipe_list
+        
+        @tracer.should_receive(:info).
+          with trace_message %{Invoking: #{@test_class}#pipe_list with [:alf, "is"] ==> Returning: "alf|is"}
+        @test_instance.pipe_list :alf, "is"
+        
+        @tracer.should_receive(:info).
+          with trace_message %{Invoking: #{@test_class}#pipe_list with [:alf, "is", 0] ==> Returning: "alf|is|0"}
+        @test_instance.pipe_list :alf, "is", 0
+      end
+      
+      it "should show methods that raise an exception" do
+        @tracer.should_receive(:info).
+          with trace_message %{Invoking: #{@test_class}#crash with [] !!! Raising: "twisted code"}
+        lambda { @test_instance.crash }.should raise_exception
+      end
+    end
+    
+    context "via autoinclusion" do
+      # setup test cases for class and instance methods
+    end
+  end
+  
+  ### OLD SPECIFICATIONS: Remove when moving to version 0.4.0 ###
   
   context ".enable_tracing_on" do
     before(:each) do
