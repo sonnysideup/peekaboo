@@ -74,9 +74,11 @@ describe Peekaboo do
       end
       
       it "should show methods that raise an exception" do
-        @tracer.should_receive(:info).
-          with trace_message %{Invoking: #{@test_class}#kaboom with [] !!! Raising: "fire, fire"}
-        lambda { @test_class.kaboom }.should raise_exception
+        lambda do
+          @tracer.should_receive(:info).
+            with trace_message %{Invoking: #{@test_class}#kaboom with [] !!! Raising: "fire, fire"}
+          @test_class.kaboom
+        end.should raise_exception
       end
     end
     
@@ -136,9 +138,11 @@ describe Peekaboo do
       end
       
       it "should show methods that raise an exception" do
-        @tracer.should_receive(:info).
-          with trace_message %{Invoking: #{@test_class}#crash with [] !!! Raising: "twisted code"}
-        lambda { @test_instance.crash }.should raise_exception
+        lambda do
+          @tracer.should_receive(:info).
+            with trace_message %{Invoking: #{@test_class}#crash with [] !!! Raising: "twisted code"}
+          @test_instance.crash
+        end.should raise_exception
       end
     end
     
