@@ -14,7 +14,7 @@ describe Peekaboo do
     end
   end
   
-  context "tracing" do
+  context "standard tracing" do
     before(:each) do
       @tracer = Peekaboo.configuration.tracer
       @test_class = new_test_class.instance_eval { include Peekaboo }
@@ -188,15 +188,91 @@ describe Peekaboo do
         @test_instance.frog
       end
     end
+  end
+  
+  context "autoinclusion tracing" do
+    before(:each) do
+      @tracer = Peekaboo.configuration.tracer
+      @base_class = new_test_class
+      Peekaboo.configure { |config| config.autoinclude_with @base_class }
+    end
     
-    context "via autoinclusion" do
-      # setup test cases for class and instance methods
+    context "on class methods" do
+      it "should inject functionality into an auto-included class" do
+        @base_class.enable_tracing_for :singleton_methods => [:say_hello]
+        
+        @tracer.should_receive(:info).
+          with trace_message %{Invoking: #{@base_class}#say_hello with [] ==> Returning: "hello"}
+        @base_class.say_hello
+      end
+
+      it "should inject functionality into any class that inherits from an auto-included class" do
+        child_class = Class.new(@base_class) { def self.say_hola; 'hola'; end }
+        child_class.enable_tracing_for :singleton_methods => [:say_hola]
+        
+        @tracer.should_receive(:info).
+          with trace_message %{Invoking: #{child_class}#say_hola with [] ==> Returning: "hola"}
+        child_class.say_hola
+      end
+
+      it "should not inject functionality into classes that are not auto-included" do
+        not_a_child_class = new_test_class
+        lambda {
+         not_a_child_class.enable_tracing_for :singleton_methods => [:say_hello]
+        }.should raise_exception NoMethodError
+      end
+
+      it "should maintain unique tracing method lists across an inheritance chain" do
+        child_class = Class.new(@base_class) { def self.say_hola; 'hola'; end }
+        @base_class.enable_tracing_for :singleton_methods => [:say_hello]
+        child_class.enable_tracing_for :singleton_methods => [:say_hola]
+
+        @base_class.traced_singleton_methods.to_a.should =~ [:say_hello]
+        child_class.traced_singleton_methods.to_a.should =~ [:say_hola]
+      end
+    end
+    
+    context "on instance methods" do
+      it "should inject functionality into an auto-included class" do
+        @base_class.enable_tracing_for :instance_methods => [:say_goodbye]
+        
+        @tracer.should_receive(:info).
+          with trace_message %{Invoking: #{@base_class}#say_goodbye with [] ==> Returning: "goodbye"}
+        @base_class.new.say_goodbye
+      end
+
+      it "should inject functionality into any class that inherits from an auto-included class" do
+        child_class = Class.new(@base_class) { def say_adios; 'adios'; end }
+        child_class.enable_tracing_for :instance_methods => [:say_adios]
+        
+        @tracer.should_receive(:info).
+          with trace_message %{Invoking: #{child_class}#say_adios with [] ==> Returning: "adios"}
+        child_class.new.say_adios
+      end
+
+      it "should not inject functionality into classes that are not auto-included" do
+        not_a_child_class = new_test_class
+        lambda {
+         not_a_child_class.enable_tracing_for :instance_methods => [:say_goodbye]
+        }.should raise_exception NoMethodError
+      end
+
+      it "should maintain unique tracing method lists across an inheritance chain" do
+        child_class = Class.new(@base_class) { def say_adios; 'adios'; end }
+        @base_class.enable_tracing_for :instance_methods => [:say_goodbye]
+        child_class.enable_tracing_for :instance_methods => [:say_adios]
+
+        @base_class.traced_instance_methods.to_a.should =~ [:say_goodbye]
+        child_class.traced_instance_methods.to_a.should =~ [:say_adios]
+      end
     end
   end
   
+  
   ### OLD SPECIFICATIONS: Remove when moving to version 0.4.0 ###
   
-  context ".enable_tracing_on" do
+  
+  context ".enable_tracing_on (old)" do
     before(:each) do
       @test_class = new_test_class
       @test_class.instance_eval { include Peekaboo }
@@ -220,7 +296,7 @@ describe Peekaboo do
     end
   end
   
-  context "instance method tracing" do
+  context "instance method tracing (old)" do
     before(:all) do
       @test_class = new_test_class
       @test_class.instance_eval do
@@ -285,7 +361,7 @@ describe Peekaboo do
     end
   end
   
-  context "autoinclusion tracing" do
+  context "autoinclusion tracing (old)" do
     before(:all) do
       @tracer = Peekaboo.configuration.tracer
     end
