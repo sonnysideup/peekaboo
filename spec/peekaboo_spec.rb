@@ -285,7 +285,7 @@ describe Peekaboo do
     it "should store a list of methods to trace on any including class" do
       methods_to_trace = [:method_no_args, :method_one_arg]
       @test_class.enable_tracing_on *methods_to_trace
-      @test_class::PEEKABOO_METHOD_LIST.should == methods_to_trace
+      @test_class.peek_list.should == methods_to_trace
     end
     
     it "should raise an exception when trying to add a method that is already being traced" do

@@ -86,7 +86,7 @@ module Peekaboo
     # @deprecated
     #   this method will be removed in version 0.4.0, use {#traced_method_map} instead
     def peek_list
-      self::PEEKABOO_METHOD_LIST
+      traced_instance_methods.to_a
     end
     
     # Enables instance method tracing on calling class.
@@ -114,7 +114,7 @@ module Peekaboo
       
       method_names.each do |method_name|
         unless peek_list.include? method_name
-          peek_list << method_name
+          traced_instance_methods << method_name
           method_list = self.instance_methods(false).map(&:to_sym)
           Peekaboo.wrap self, method_name, :instance if method_list.include? method_name
         else

@@ -25,15 +25,12 @@ module Peekaboo
     #
     # @param [Class] klass including class
     def included klass
-      # NOTE: remove :PEEKABOO_METHOD_LIST when moving to version 0.4.0
-      klass.const_set :PEEKABOO_METHOD_LIST, []
-      
       klass.const_set :PEEKABOO_METHOD_MAP, { :singleton_methods => Set.new, :instance_methods => Set.new }.freeze
       klass.instance_variable_set :@_hooked_by_peekaboo, true
       klass.extend SingletonMethods
       
       def klass.method_added name
-        Peekaboo.wrap self, name, :instance if traced_instance_methods.include?(name) || peek_list.include?(name)
+        Peekaboo.wrap self, name, :instance if traced_instance_methods.include? name
       end
       
       def klass.singleton_method_added name
