@@ -1,5 +1,6 @@
 require 'rubygems'
-require 'rake'
+require 'bundler/setup'
+
 require 'spec/rake/spectask'
 require 'rcov/rcovtask'
 require 'yard'

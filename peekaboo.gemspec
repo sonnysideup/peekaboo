@@ -12,10 +12,9 @@ Gem::Specification.new do |gem|
   gem.homepage    = "http://github.com/sgarcia/peekaboo"
   gem.authors     = ["Sonny Ruben Garcia"]
   
-  gem.add_development_dependency "rspec", "1.3.0"
-  gem.add_development_dependency "rcov",  "0.9.9"
-  gem.add_development_dependency "yard",  "0.6.1"
+  gem.add_development_dependency "bundler", "1.0.3"
   
   gem.files      = `git ls-files`.split("\n")
   gem.test_files = `git ls-files -- spec/*`.split("\n")
+  gem.extra_rdoc_files = ["CHANGELOG.md"]
 end
