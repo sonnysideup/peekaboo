@@ -1,29 +1,39 @@
 require 'peekaboo/configuration'
 require 'peekaboo/singleton_methods'
 
-# The workhorse of this "Unobtrusive Tracing System".
+# This system has been designed to provide you with an easy and unobtrusive way to trace:
+# * _When_ certain methods are being called
+# * _What_ values they are being supplied
+# * _What_ values they return
+# * _If_ they raise an exception
+#
+# Its API supports both class and instance method tracing inside any of your custom types.
+# You can enable tracing for existing methods and/or pre-register method signatures for any of your types.
+# The latter option gives you the ability to trace any methods that are defined _dynamically_ at runtime.
+#
+# ( see {SingletonMethods#enable_tracing_for} for details )
+#
+# You can also setup *auto-inclusion*, which will allow you _dynamically_ include this module into any of
+# your types at runtime. This alleviates the hassle of having to "+include Peekaboo+" inside all of the
+# classes that you intend use it.
+#
+# ( see {Configuration#autoinclude_with} for details )
 module Peekaboo
   class << self
-    # @return [Configuration] the current configuration
+    # @private
     def configuration
       @configuration ||= Configuration.new
     end
     
-    # Convenience method added to assist in configuring the system
-    # ( see {Configuration} for details on all options ).
+    # Use this to configure various aspects of tracing in your application.
     #
-    # @example Configuring the system inside your project
-    #   Peekaboo.configure do |config|
-    #     config.trace_with MyCustomerLogger.new
-    #     config.autoinclude_with SomeBaseClass, AnotherSoloClass
-    #   end
+    # See {Configuration} for option details.
+    # @yieldparam [Configuration] config current configuration
     def configure
       yield configuration
     end
     
-    # Callback used to hook tracing system into any class.
-    #
-    # @param [Class] klass including class
+    # @private
     def included klass
       klass.const_set :PEEKABOO_METHOD_MAP, { :singleton_methods => Set.new, :instance_methods => Set.new }.freeze
       klass.instance_variable_set :@_hooked_by_peekaboo, true
@@ -38,10 +48,7 @@ module Peekaboo
       end
     end
     
-    # Modifies a class, and its child classes, to dynamically include module
-    # at runtime. This method is used by {Configuration#autoinclude_with}.
-    #
-    # @param [Class] klass class to modify
+    # @private
     def setup_autoinclusion klass
       # @note changes made to this methods to support backwards
       # compatibility with {#enable_tracing_on}. This will become
@@ -56,7 +63,7 @@ module Peekaboo
       end
     end
     
-    # @todo document
+    # @private
     def wrap klass, method_name, target
       return if @_adding_a_method
       begin
@@ -76,7 +83,6 @@ module Peekaboo
     
     private
     
-    # @todo document
     def wrap_instance_method klass, method_name, original_method_name
       method_wrapping = %{
         alias_method :#{original_method_name}, :#{method_name}
@@ -97,7 +103,6 @@ module Peekaboo
       klass.class_eval method_wrapping
     end
     
-    # @todo document
     def wrap_singleton_method klass, method_name, original_method_name
       method_wrapping = %{
         class << self
