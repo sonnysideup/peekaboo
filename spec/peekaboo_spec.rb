@@ -14,7 +14,7 @@ describe Peekaboo do
     end
   end
   
-  context "standard tracing" do
+  context "enabling tracing" do
     before(:each) do
       @tracer = Peekaboo.configuration.tracer
       @test_class = new_test_class.instance_eval { include Peekaboo }
@@ -264,6 +264,65 @@ describe Peekaboo do
 
         @base_class.traced_instance_methods.to_a.should =~ [:say_goodbye]
         child_class.traced_instance_methods.to_a.should =~ [:say_adios]
+      end
+    end
+  end
+  
+  context "disabling tracing" do
+    before(:each) do
+      @tracer = Peekaboo.configuration.tracer
+      @test_class = new_test_class.instance_eval { include Peekaboo }
+      @test_class.enable_tracing_for :singleton_methods => [:say_hello, :hello, :add, :happy?, :comma_list, :kaboom],
+                                     :instance_methods  => [:say_goodbye, :goodbye, :subtract, :sad?, :pipe_list, :crash]
+    end
+    
+    context "on class methods" do
+      it "should remove the method name for the list of traced methods" do
+        lambda {
+          @test_class.disable_tracing_for :singleton_methods => [:say_hello]
+        }.should change(@test_class.traced_singleton_methods, :size).by(-1)
+        
+        lambda {
+          @test_class.disable_tracing_for :singleton_methods => [:hello, :add]
+        }.should change(@test_class.traced_singleton_methods, :size).by(-2)
+      end
+
+      it "should properly restore the original method to an untraced state" do
+        @test_class.disable_tracing_for :singleton_methods => [:say_hello]
+        @tracer.should_not_receive :info
+        @test_class.say_hello.should == 'hello'
+        
+        @test_class.disable_tracing_for :singleton_methods => [:hello, :add]
+        @tracer.should_not_receive :info
+        @test_class.hello('you').should == 'hello you'
+        @test_class.add(5, 4).should == 9
+      end
+    end
+    
+    context "on instance methods" do
+      before(:each) do
+        @test_instance = @test_class.new
+      end
+      
+      it "should remove the method name for the list of traced methods" do
+        lambda {
+          @test_class.disable_tracing_for :instance_methods => [:say_goodbye]
+        }.should change(@test_class.traced_instance_methods, :size).by(-1)
+        
+        lambda {
+          @test_class.disable_tracing_for :instance_methods => [:goodbye, :subtract]
+        }.should change(@test_class.traced_instance_methods, :size).by(-2)
+      end
+
+      it "should properly restore the original method to an untraced state" do
+        @test_class.disable_tracing_for :instance_methods => [:say_goodbye]
+        @tracer.should_not_receive :info
+        @test_instance.say_goodbye.should == 'goodbye'
+        
+        @test_class.disable_tracing_for :instance_methods => [:goodbye, :subtract]
+        @tracer.should_not_receive :info
+        @test_instance.goodbye('mother').should == 'goodbye mother'
+        @test_instance.subtract(100, 99).should == 1
       end
     end
   end

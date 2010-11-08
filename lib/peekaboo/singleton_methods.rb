@@ -56,12 +56,22 @@ module Peekaboo
       _register_traceables_ method_map[:singleton_methods], :singleton
     end
     
+    # @todo document
+    def disable_tracing_for method_map
+      method_map = { :singleton_methods => [], :instance_methods => [] }.merge method_map
+      
+      _unregister_traceables_ method_map[:instance_methods],  :instance
+      _unregister_traceables_ method_map[:singleton_methods], :singleton
+    end
+    
     private
     
+    # @todo document
     def method_added name
       Peekaboo.wrap self, name, :instance if traced_instance_methods.include? name
     end
     
+    # @todo document
     def singleton_method_added name
       Peekaboo.wrap self, name, :singleton if traced_singleton_methods.include? name
     end
@@ -79,6 +89,18 @@ module Peekaboo
           target_method_list << method_name
           existing_methods = self.__send__(:"#{target}_methods", false).map(&:to_sym)
           Peekaboo.wrap self, method_name, target if existing_methods.include? method_name
+        end
+      end
+    end
+    
+    # @todo document
+    def _unregister_traceables_ method_list, target
+      method_list.each do |method_name|
+        target_method_list = __send__ :"traced_#{target}_methods"
+        
+        if target_method_list.include? method_name
+          target_method_list.delete method_name
+          Peekaboo.unwrap self, method_name, target
         end
       end
     end

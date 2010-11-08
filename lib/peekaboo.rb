@@ -70,6 +70,16 @@ module Peekaboo
       end
     end
     
+    # @private
+    def unwrap klass, method_name, target
+      removal_snippet = "alias_method :#{method_name}, :original_#{method_name}"
+      case target
+      when :singleton then klass.instance_eval "class << self ; #{removal_snippet} ; end"
+      when :instance  then klass.class_eval removal_snippet
+      else raise 'Only :class and :instance are valid targets'
+      end
+    end
+    
     private
     
     def wrap_instance_method klass, method_name, original_method_name
