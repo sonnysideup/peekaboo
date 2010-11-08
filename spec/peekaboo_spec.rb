@@ -276,6 +276,17 @@ describe Peekaboo do
                                      :instance_methods  => [:say_goodbye, :goodbye, :subtract, :sad?, :pipe_list, :crash]
     end
     
+    it "should not raise an exception when methods do not exist and have not been pre-registered" do
+      methods = { :singleton_methods => [:missing_class_def], :instance_methods => [:missing_instance_def] }
+      lambda { @test_class.disable_tracing_for methods }.should_not raise_exception
+    end
+    
+    it "should not raise an exception when methods do not exist and have been pre-registered" do
+      methods = { :singleton_methods => [:missing_class_def], :instance_methods => [:missing_instance_def] }
+      @test_class.enable_tracing_for methods
+      lambda { @test_class.disable_tracing_for methods }.should_not raise_exception
+    end
+    
     context "on class methods" do
       it "should remove the method name for the list of traced methods" do
         lambda {

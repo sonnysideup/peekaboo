@@ -113,8 +113,8 @@ module Peekaboo
         
         if target_method_list.include? method_name
           target_method_list.delete method_name
-          # existing_methods = self.__send__(:"#{target}_methods", false).map(&:to_sym)
-          Peekaboo.unwrap self, method_name, target #if existing_methods.include? method_name
+          existing_methods = self.__send__(:"#{target}_methods", false).map(&:to_sym)
+          Peekaboo.unwrap self, method_name, target if existing_methods.include? method_name
         end
       end
     end
