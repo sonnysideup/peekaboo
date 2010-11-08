@@ -5,62 +5,87 @@ Does it lead to a lot of duplication and make your code feel less "elegant"?
 Peekaboo offers an alternative approach to tracing method calls, their provided arguments, and their return values.
 Simply specify which methods you want to trace inside a class and let peekaboo take care of the rest.
 
-## Installation and usage
+## Usage
 
-Gem:
+### Installation
+
+Install via Rubygems:
 
     $ gem install peekaboo
 
-### How it works:
+### Concept
 
-Peekaboo uses method wrapping and an internal tracer to capture the data you want to know about your methods.
+Peekaboo uses method wrapping and an internal tracer to capture data about method calls.
 Its tracer adheres to the API established by the Logger class ( i.e. debug, info, warn, etc... ).
 For now, the only trace level supported is "info", but there are plans to support all trace levels in the future.
-Also, this first cut only provides tracing for _instance_ methods.
 
-When creating a new class, include Peekaboo and then call `enable_tracing_on`, passing it a list of method names to trace.
+Including Peekaboo into your class definition initializes the system within the context of that class and adds
+a number of class methods that can be used to create and inspect traced methods.
 
-    class Example
-      include Peekaboo
-      enable_tracing_on :foo, :bar
-      
-      def foo
-        #...
-      end
-      
-      def bar
-        #...
-      end
-    end
-
-Sometimes you may want to trace methods in a class that has already been created.
-In that case, simply reopen the class definition and follow the same steps listed above.
-
-    # Example class already exists with instance methods #baz and #bif defined
+    require 'peekaboo'
     
     class Example
       include Peekaboo
-      enable_tracing_on :baz, :bif
+      # ...
     end
+
+It is also possible to enable tracing without explicitly including Peekaboo. See the ["Auto-inclusion"](#Auto-inclusion) for details.
+
+### Method Tracing
+
+Once Peekaboo has been enabled within a class you can call `enable_tracing_for`, inside the class definition or
+directly on the class object, passing it a structured hash of method names. The hash should contain 1 or 2 keys,
+`:singleton_methods` and `:instance_methods`, each pointing to an array of symbolized method names.
+
+    # Calling inside class definition
+    class Example
+      enable_tracing_for :singleton_methods => [:first_class_method, :second_class_method],
+                         :instance_methods  => [:an_instance_method]
+      
+      # method n' such...
+    end
+    
+    # Calling on class object
+    Example.enable_tracing_for # same arguments as above
 
 Now, with tracing enabled, Peekaboo will report when/where those methods are called along with their input and output values.
 
+    # Peekaboo tracer receives the following message when .first_class_method is called below:
+    #   "File:Line ( Example.first_class_method called with [] ==> Returning: 'whatever gets returned' )"
+    Example.first_class_method
+    
     # @obj is an instance of Example
     # Peekaboo tracer receives the following message when #baz is called below:
-    #   "File:Line ( Example#baz called with [:one, 2, "three"] ==> Returning: 'whatever gets returned' )"
-    
-    @obj.baz :one, 2, "three"
+    #   "File:Line ( Example#an_instance_method called with [:one, 2, "three"] ==> Returning: 'whatever gets returned' )"
+    @obj.an_instance_method :one, 2, "three"
 
-**NOTE:** Once a class has already included `Peekaboo`, you can call `enable_tracing_on` directly on the class.
+### Pre-registration of Methods
 
-    class SomeClass
-      include Peekaboo
-      # methods n' such
+Sometimes, in Ruby, we need to define methods at runtime based on some aspect of our application. Fortunately,
+Peekaboo allows you to _register_ a method signature for tracing without enforcing that the method actually exists.
+If any methods that you register get added to your type during program execution, Peekaboo will trace calls to
+those methods in exactly the same fashion as before.
+
+    class DynamicEntity
+      # #might_need_it is not yet defined
+      enable_tracing_for :instance_methods => [:might_need_it]
     end
     
-    SomeClass.enable_tracing_on :this, :that, :the_other
+    # somewhere else in the codebase the pre-registered method gets defined
+    DynamicEntity.class_eval do
+      def might_need_it
+        # ...
+      end
+    end
+    
+    DynamicEntity.new.might_need_it # calls out to the Peekaboo tracer
 
 ## Configuration
+
+There are a number of ways to configure Peekaboo for your project. Please read each section below for information
+on a particular configuration option.
+
+### Method Tracer
 
 The default tracer for Peekaboo is an instance of `Logger` streaming to `STDOUT`.
 If this doesn't suit your needs, it is a trivial task to set the tracer to another object using the Peekaboo configuration.
@@ -76,7 +101,7 @@ If this doesn't suit your needs, it is a trivial task to set the tracer to anoth
       config.trace_with @custom_logger_object
     end
 
-### Auto-inclusion ( Exciting NEW FEATURE )
+### Auto-inclusion
 
 Want to use tracing in classes without having to open up their definitions?
 Simply provide a list of classes to the configuration.
@@ -127,7 +152,7 @@ If you're looking to contribute please read the contribution guidelines before s
 
 ## License
 
-Copyright (c) 2009 Sonny Ruben Garcia
+Copyright (c) 2010 Sonny Ruben Garcia
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
