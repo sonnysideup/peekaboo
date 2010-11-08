@@ -56,7 +56,12 @@ module Peekaboo
       _register_traceables_ method_map[:singleton_methods], :singleton
     end
     
-    # @todo document
+    # Removes singleton and instance method tracing. This can be called in
+    # exactly the same fashion as {#enable_tracing_for enable_tracing_for}.
+    #
+    # @param [Hash] method_map a list of methods to trace
+    # @option method_map [Array<Symbol>] :singleton_methods ([]) singleton method list
+    # @option method_map [Array<Symbol>] :instance_methods  ([]) instance method list
     def disable_tracing_for method_map
       method_map = { :singleton_methods => [], :instance_methods => [] }.merge method_map
       
@@ -66,12 +71,16 @@ module Peekaboo
     
     private
     
-    # @todo document
+    # Hooks tracing for instance methods added after registration.
+    #
+    # @param [Symbol] name method name
     def method_added name
       Peekaboo.wrap self, name, :instance if traced_instance_methods.include? name
     end
     
-    # @todo document
+    # Hooks tracing for singleton methods added after registration.
+    #
+    # @param [Symbol] name method name
     def singleton_method_added name
       Peekaboo.wrap self, name, :singleton if traced_singleton_methods.include? name
     end
@@ -93,14 +102,19 @@ module Peekaboo
       end
     end
     
-    # @todo document
+    # Unregisters a list of method signatures and optionally disables tracing on them.
+    # Tracing will only be "disabled" if the method exists and was previously being traced.
+    #
+    # @param [Array<Symbol>] method_list methods to register
+    # @param [Symbol] target specifies the receiver, either +:singleton+ or +:instance+
     def _unregister_traceables_ method_list, target
       method_list.each do |method_name|
         target_method_list = __send__ :"traced_#{target}_methods"
         
         if target_method_list.include? method_name
           target_method_list.delete method_name
-          Peekaboo.unwrap self, method_name, target
+          # existing_methods = self.__send__(:"#{target}_methods", false).map(&:to_sym)
+          Peekaboo.unwrap self, method_name, target #if existing_methods.include? method_name
         end
       end
     end
