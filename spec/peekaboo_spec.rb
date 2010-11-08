@@ -59,48 +59,48 @@ describe Peekaboo do
       
       it "should show listed methods with no arguments" do
         @tracer.should_receive(:info).
-          with trace_message %{Invoking: #{@test_class}#say_hello with [] ==> Returning: "hello"}
+          with trace_message %{Invoking: #{@test_class}.say_hello with [] ==> Returning: "hello"}
         @test_class.say_hello
       end
       
       it "should show listed methods with required arguments" do
         @tracer.should_receive(:info).
-          with trace_message %{Invoking: #{@test_class}#hello with ["developer"] ==> Returning: "hello developer"}
+          with trace_message %{Invoking: #{@test_class}.hello with ["developer"] ==> Returning: "hello developer"}
         @test_class.hello 'developer'
         
         @tracer.should_receive(:info).
-          with trace_message %{Invoking: #{@test_class}#add with [1, 2] ==> Returning: 3}
+          with trace_message %{Invoking: #{@test_class}.add with [1, 2] ==> Returning: 3}
         @test_class.add 1, 2
       end
       
       it "should show methods with optional arguments" do
         @tracer.should_receive(:info).
-          with trace_message %{Invoking: #{@test_class}#happy? with [] ==> Returning: true}
+          with trace_message %{Invoking: #{@test_class}.happy? with [] ==> Returning: true}
         @test_class.happy?
         
         @tracer.should_receive(:info).
-          with trace_message %{Invoking: #{@test_class}#happy? with [false] ==> Returning: false}
+          with trace_message %{Invoking: #{@test_class}.happy? with [false] ==> Returning: false}
         @test_class.happy? false
       end
       
       it "should show methods with variable arguments" do
         @tracer.should_receive(:info).
-          with trace_message %{Invoking: #{@test_class}#comma_list with [] ==> Returning: ""}
+          with trace_message %{Invoking: #{@test_class}.comma_list with [] ==> Returning: ""}
         @test_class.comma_list
         
         @tracer.should_receive(:info).
-          with trace_message %{Invoking: #{@test_class}#comma_list with [:too, "cool"] ==> Returning: "too,cool"}
+          with trace_message %{Invoking: #{@test_class}.comma_list with [:too, "cool"] ==> Returning: "too,cool"}
         @test_class.comma_list :too, 'cool'
         
         @tracer.should_receive(:info).
-          with trace_message %{Invoking: #{@test_class}#comma_list with [1, "to", 5] ==> Returning: "1,to,5"}
+          with trace_message %{Invoking: #{@test_class}.comma_list with [1, "to", 5] ==> Returning: "1,to,5"}
         @test_class.comma_list 1, 'to', 5
       end
       
       it "should show methods that raise an exception" do
         lambda do
           @tracer.should_receive(:info).
-            with trace_message %{Invoking: #{@test_class}#kaboom with [] !!! Raising: "fire, fire"}
+            with trace_message %{Invoking: #{@test_class}.kaboom with [] !!! Raising: "fire, fire"}
           @test_class.kaboom
         end.should raise_exception
       end
@@ -112,7 +112,7 @@ describe Peekaboo do
         end
         
         @tracer.should_receive(:info).
-          with trace_message %{Invoking: #{@test_class}#dog with [] ==> Returning: "woof"}
+          with trace_message %{Invoking: #{@test_class}.dog with [] ==> Returning: "woof"}
         @test_class.dog
       end
     end
@@ -202,7 +202,7 @@ describe Peekaboo do
         @base_class.enable_tracing_for :singleton_methods => [:say_hello]
         
         @tracer.should_receive(:info).
-          with trace_message %{Invoking: #{@base_class}#say_hello with [] ==> Returning: "hello"}
+          with trace_message %{Invoking: #{@base_class}.say_hello with [] ==> Returning: "hello"}
         @base_class.say_hello
       end
 
@@ -211,7 +211,7 @@ describe Peekaboo do
         child_class.enable_tracing_for :singleton_methods => [:say_hola]
         
         @tracer.should_receive(:info).
-          with trace_message %{Invoking: #{child_class}#say_hola with [] ==> Returning: "hola"}
+          with trace_message %{Invoking: #{child_class}.say_hola with [] ==> Returning: "hola"}
         child_class.say_hola
       end
 

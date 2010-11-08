@@ -108,7 +108,7 @@ module Peekaboo
         class << self
           alias_method :#{original_method_name}, :#{method_name}
           def #{method_name} *args, &block
-            trace = "\#{caller(1)[0]}\n\t( Invoking: #{klass}\##{method_name} with \#{args.inspect} "
+            trace = "\#{caller(1)[0]}\n\t( Invoking: #{klass}.#{method_name} with \#{args.inspect} "
             begin
               result = #{original_method_name} *args, &block
               trace << "==> Returning: \#{result.inspect} )"
