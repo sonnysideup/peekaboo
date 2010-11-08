@@ -1,3 +1,16 @@
+# Changelog
+
+## 0.3.0 (November 8, 2010)
+
+Features:
+
+  - Adds support for class & instance method tracing via `.enable_tracing_for`
+  - Adds convenience methods for inspecting traced methods within a class
+    - `.traced_method_map`
+    - `.traced_instance_methods`
+    - `.traced_singleton_methods`
+  - Deprecates `.enable_tracing_on` & `.peek_list`
+
 ## 0.2.1 (November 4, 2010)
 
 Bugfix:
@@ -16,4 +29,3 @@ Features:
 
   - Adds support for instance method tracing
   - Configurable tracer via `Peekaboo.configure`
-

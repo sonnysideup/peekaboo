@@ -1,9 +1,11 @@
-# Peekaboo: Unobtrusive method tracing for Ruby classes
+# Peekaboo - Unobtrusive method tracing for Ruby classes
 
 Do you find yourself constantly adding log statements to a lot of the methods in your project?
 Does it lead to a lot of duplication and make your code feel less "elegant"?
 Peekaboo offers an alternative approach to tracing method calls, their provided arguments, and their return values.
 Simply specify which methods you want to trace inside a class and let peekaboo take care of the rest.
+
+**( Compatible with Ruby versions 1.8.7 and 1.9.2 )**
 
 ## Usage
 
