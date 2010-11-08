@@ -58,6 +58,14 @@ module Peekaboo
     
     private
     
+    def method_added name
+      Peekaboo.wrap self, name, :instance if traced_instance_methods.include? name
+    end
+    
+    def singleton_method_added name
+      Peekaboo.wrap self, name, :singleton if traced_singleton_methods.include? name
+    end
+    
     # Registers a list of method signatures and optionally enables tracing on them.
     # Tracing will only be "enabled" if the method exists and has not already been registered.
     #
