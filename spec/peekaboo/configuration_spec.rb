@@ -50,14 +50,14 @@ describe Peekaboo::Configuration do
     it "should auto-include Peekaboo into any class in its list" do
       test_class = new_test_class
       @config.autoinclude_with test_class
-      lambda { test_class.enable_tracing_on }.should_not raise_exception
+      lambda { test_class.enable_tracing_for({}) }.should_not raise_exception
     end
     
     it "should auto-include Peekaboo into any class that inherits from a class in its list" do
       parent_class = new_test_class
       child_class = Class.new(parent_class)
       @config.autoinclude_with parent_class
-      lambda { child_class.enable_tracing_on }.should_not raise_exception
+      lambda { child_class.enable_tracing_for({}) }.should_not raise_exception
     end
   end
   

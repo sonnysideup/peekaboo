@@ -50,13 +50,10 @@ module Peekaboo
     
     # @private
     def setup_autoinclusion klass
-      # @note changes made to this methods to support backwards
-      # compatibility with {#enable_tracing_on}. This will become
-      # much simpler when that method is removed.
       def klass.method_missing(method_name, *args, &block)
-        if method_name.to_s =~ /^enable_tracing_(on|for)$/
+        if method_name.to_s =~ /^enable_tracing_for$/
           instance_eval { include Peekaboo }
-          __send__ method_name, *args
+          enable_tracing_for *args
         else
           super
         end

@@ -74,53 +74,5 @@ module Peekaboo
         end
       end
     end
-    
-    
-    #################### DEPRECATED ####################
-    
-    
-    public
-    
-    # @return [Array<Symbol>]
-    #   a list of instance methods that are being traced inside calling class
-    # @deprecated
-    #   this method will be removed in version 0.4.0, use {#traced_method_map} instead
-    def peek_list
-      traced_instance_methods.to_a
-    end
-    
-    # Enables instance method tracing on calling class.
-    #
-    # @example Trace a couple of methods
-    #   class SomeClass
-    #     include Peekaboo
-    #
-    #     def method1; end
-    #     def method2; end
-    #     def method3; end
-    #   end
-    #
-    #   # Tracing will be performed on method1(), method2(), but NOT method3()
-    #   SomeClass.enable_tracing_on :method1, :method2
-    #
-    # @param [*Symbol] method_names
-    #   the list of methods that you want to trace
-    # @raise [RuntimeError]
-    #   when attempting to add a method that is already being traced
-    # @deprecated
-    #   this method will be removed in version 0.4.0, use {#enable_tracing_for} instead
-    def enable_tracing_on *method_names
-      include Peekaboo unless @_hooked_by_peekaboo
-      
-      method_names.each do |method_name|
-        unless peek_list.include? method_name
-          traced_instance_methods << method_name
-          method_list = self.instance_methods(false).map(&:to_sym)
-          Peekaboo.wrap self, method_name, :instance if method_list.include? method_name
-        else
-          raise "Already tracing `#{method_name}'"
-        end
-      end
-    end
   end
 end

@@ -113,12 +113,12 @@ Simply provide a list of classes to the configuration.
     end
     
     # Then inside your code somewhere
-    Zip.enable_tracing_on # ...
-    Zap.enable_tracing_on # ...
-    Boom.enable_tracing_on # ...
+    Zip.enable_tracing_for # ...
+    Zap.enable_tracing_for # ...
+    Boom.enable_tracing_for # ...
 
 By configuring auto-inclusion, `Peekaboo` will load itself into your class *dynamically* at runtime.
-All that's left for you to do is call `enable_tracing_on` with a list of methods you want to trace.
+All that's left for you to do is call `enable_tracing_for` with a list of methods you want to trace.
 
 Easy, huh? *It gets better!*
 
@@ -140,8 +140,8 @@ it will be enabled for any class that inherits from that class.
       config.autoinclude_with Weapon
     end
     
-    Pistol.enable_tracing_one # Peekaboo loaded, Weapon & Firearm still left unchanged
-    Firearm.enable_tracing_on # Peekaboo loaded, Weapon left unchanged
+    Pistol.enable_tracing_for # Peekaboo loaded, Weapon & Firearm still left unchanged
+    Firearm.enable_tracing_for # Peekaboo loaded, Weapon left unchanged
 
 ## Issues
 
