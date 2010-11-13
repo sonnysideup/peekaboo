@@ -33,7 +33,7 @@ a number of class methods that can be used to create and inspect traced methods.
 
 It is also possible to enable tracing without explicitly including Peekaboo. See the ["Auto-inclusion"](#Auto-inclusion) for details.
 
-### Method Tracing
+### Enabling Method Tracing
 
 Once Peekaboo has been enabled within a class you can call `enable_tracing_for`, inside the class definition or
 directly on the class object, passing it a structured hash of method names. The hash should contain 1 or 2 keys,
@@ -54,12 +54,25 @@ Now, with tracing enabled, Peekaboo will report when/where those methods are cal
 
     # Peekaboo tracer receives the following message when .first_class_method is called below:
     #   "File:Line ( Example.first_class_method called with [] ==> Returning: 'whatever gets returned' )"
+    
     Example.first_class_method
     
     # @obj is an instance of Example
     # Peekaboo tracer receives the following message when #baz is called below:
     #   "File:Line ( Example#an_instance_method called with [:one, 2, "three"] ==> Returning: 'whatever gets returned' )"
+    
     @obj.an_instance_method :one, 2, "three"
+
+### Disabling Method Tracing
+
+Because your application may only want to trace certain methods at certain times, you can disable tracing for any method that
+was previously being traced. The interface arguments are the same as above except that you will pass them to `disable_tracing_for`.
+
+    # Peekaboo is tracing .something and #something_else
+    
+    Example.disable_tracing_for :singleton_methods => [:something], :instance_methods => [:something_else]
+    
+    # Peekaboo has now restored these methods to an "untraced" state
 
 ### Pre-registration of Methods
 
