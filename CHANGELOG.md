@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.0 (November 13, 2010)
+
+Features:
+
+  - Adds support for disabling method tracing via `.disable_tracing_for`
+  - Removes `.enable_tracing_on` & `.peek_list`
+
 ## 0.3.0 (November 8, 2010)
 
 Features:
