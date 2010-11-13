@@ -118,5 +118,21 @@ module Peekaboo
         end
       end
     end
+  
+    module AutoInclusion
+      
+      private
+      
+      def method_missing(method_name, *args, &block)
+        if method_name.to_s =~ /^enable_tracing_for$/
+          instance_eval { include Peekaboo }
+          enable_tracing_for *args
+        else
+          super
+        end
+      end
+      
+    end
+    
   end
 end

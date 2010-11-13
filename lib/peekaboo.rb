@@ -42,14 +42,7 @@ module Peekaboo
     
     # @private
     def setup_autoinclusion klass
-      def klass.method_missing(method_name, *args, &block)
-        if method_name.to_s =~ /^enable_tracing_for$/
-          instance_eval { include Peekaboo }
-          enable_tracing_for *args
-        else
-          super
-        end
-      end
+      klass.extend SingletonMethods::AutoInclusion
     end
     
     # @private
